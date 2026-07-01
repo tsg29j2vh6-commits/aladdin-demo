@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Aladdin Overview — Portfolio & Risk Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     :root {
@@ -130,14 +130,14 @@
       padding: 12px;
       border-top: 1px solid var(--border);
     }
-    .sidebar-footer .nav-item {
-      padding: 8px 12px;
-    }
+    .sidebar-footer .nav-item { padding: 8px 12px; }
 
     /* ─── Main ─── */
     .main {
       flex: 1;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
     }
 
     /* Top Bar */
@@ -152,25 +152,10 @@
       top: 0;
       z-index: 100;
     }
-    .topbar-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .topbar-title h1 {
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-    .topbar-title p {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      margin-top: 1px;
-    }
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
+    .topbar-left { display: flex; align-items: center; gap: 16px; }
+    .topbar-title h1 { font-size: 1.1rem; font-weight: 600; }
+    .topbar-title p { font-size: 0.75rem; color: var(--text-secondary); margin-top: 1px; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
     .time-display {
       font-family: var(--font-mono);
       font-size: 0.75rem;
@@ -214,7 +199,7 @@
     }
 
     /* ─── Content ─── */
-    .content { padding: 24px 28px 40px; }
+    .content { flex: 1; padding: 24px 28px 40px; }
 
     /* KPI Row */
     .kpi-row {
@@ -255,7 +240,7 @@
     .kpi-change.up { color: var(--green); }
     .kpi-change.down { color: var(--red); }
 
-    /* Charts Row */
+    /* Charts Row + Skeleton Anti-CLS */
     .charts-row {
       display: grid;
       grid-template-columns: 2fr 1fr;
@@ -274,14 +259,8 @@
       justify-content: space-between;
       margin-bottom: 16px;
     }
-    .card-title {
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-    .card-controls {
-      display: flex;
-      gap: 4px;
-    }
+    .card-title { font-size: 0.85rem; font-weight: 600; }
+    .card-controls { display: flex; gap: 4px; }
     .card-controls button {
       background: none;
       border: 1px solid transparent;
@@ -300,7 +279,57 @@
       color: var(--blue);
       border-color: transparent;
     }
-    .chart-container { position: relative; height: 260px; }
+
+    .chart-container {
+      position: relative;
+      aspect-ratio: 21 / 9;
+      max-height: 260px;
+      overflow: hidden;
+    }
+    .chart-container.is-compact {
+      aspect-ratio: 4 / 3;
+      max-height: 180px;
+    }
+
+    /* Skeleton placeholder — shown before Chart renders, removed after */
+    .chart-skeleton {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-primary);
+      border-radius: 4px;
+      display: flex;
+      align-items: flex-end;
+      gap: 4%;
+      padding: 8% 6% 10%;
+      z-index: 1;
+      transition: opacity 0.3s ease;
+    }
+    .chart-skeleton.is-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .chart-skeleton-bar {
+      flex: 1;
+      background: var(--border);
+      border-radius: 2px 2px 0 0;
+      min-height: 4px;
+      animation: skeletonPulse 1.8s ease-in-out infinite;
+    }
+    .chart-skeleton-bar:nth-child(1) { height: 55%; animation-delay: 0s; }
+    .chart-skeleton-bar:nth-child(2) { height: 70%; animation-delay: 0.1s; }
+    .chart-skeleton-bar:nth-child(3) { height: 45%; animation-delay: 0.2s; }
+    .chart-skeleton-bar:nth-child(4) { height: 80%; animation-delay: 0.3s; }
+    .chart-skeleton-bar:nth-child(5) { height: 60%; animation-delay: 0.4s; }
+    .chart-skeleton-bar:nth-child(6) { height: 85%; animation-delay: 0.5s; }
+    .chart-skeleton-bar:nth-child(7) { height: 50%; animation-delay: 0.6s; }
+    .chart-skeleton-bar:nth-child(8) { height: 75%; animation-delay: 0.7s; }
+    .chart-skeleton-bar:nth-child(9) { height: 40%; animation-delay: 0.8s; }
+    .chart-skeleton-bar:nth-child(10) { height: 65%; animation-delay: 0.9s; }
+
+    @keyframes skeletonPulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.7; }
+    }
 
     /* Allocation legend */
     .alloc-legend { margin-top: 12px; }
@@ -314,14 +343,6 @@
     .alloc-item-left { display: flex; align-items: center; gap: 8px; }
     .alloc-dot { width: 8px; height: 8px; border-radius: 50%; }
     .alloc-item-value { font-family: var(--font-mono); color: var(--text-secondary); }
-    .alloc-bar-track {
-      height: 3px;
-      background: var(--bg-primary);
-      border-radius: 2px;
-      margin-top: 2px;
-      overflow: hidden;
-    }
-    .alloc-bar-fill { height: 100%; border-radius: 2px; }
 
     /* Risk row */
     .risk-row {
@@ -358,9 +379,7 @@
     .risk-meter-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
 
     /* Holdings Table */
-    .table-wrap {
-      overflow-x: auto;
-    }
+    .table-wrap { overflow-x: auto; }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -386,11 +405,7 @@
       white-space: nowrap;
     }
     tr:hover td { background: rgba(255,255,255,0.02); }
-    .td-asset {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .td-asset { display: flex; align-items: center; gap: 10px; }
     .asset-icon {
       width: 28px; height: 28px;
       border-radius: 6px;
@@ -406,6 +421,22 @@
     .num.up { color: var(--green); }
     .num.down { color: var(--red); }
 
+    /* ─── Footer ─── */
+    .main-footer {
+      border-top: 1px solid var(--border);
+      background: var(--bg-secondary);
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .main-footer-left { display: flex; align-items: center; gap: 20px; }
+    .main-footer-left a { color: var(--text-muted); text-decoration: none; transition: color var(--transition); }
+    .main-footer-left a:hover { color: var(--text-primary); }
+    .main-footer-right { font-family: var(--font-mono); font-size: 0.65rem; }
+
     /* Responsive */
     @media (max-width: 1200px) {
       .kpi-row { grid-template-columns: repeat(2, 1fr); }
@@ -420,9 +451,10 @@
       .risk-row { grid-template-columns: 1fr; }
       .search-box { min-width: 140px; }
       .time-display { display: none; }
+      .main-footer { flex-direction: column; gap: 8px; text-align: center; }
     }
 
-    /* Animations */
+    /* Fade-in */
     @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
     .kpi-card, .card, .risk-card { animation: fadeIn 0.5s ease forwards; opacity:0; }
     .kpi-card:nth-child(1) { animation-delay:0.05s; }
@@ -438,6 +470,7 @@
 </head>
 <body>
 
+  <!-- ═══ SIDEBAR ═══ -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-logo">A</div>
@@ -490,6 +523,7 @@
     </div>
   </aside>
 
+  <!-- ═══ MAIN ═══ -->
   <div class="main">
     <header class="topbar">
       <div class="topbar-left">
@@ -545,7 +579,7 @@
         </div>
       </div>
 
-      <!-- Charts -->
+      <!-- Charts (with skeleton placeholders → replaced by Chart on load) -->
       <div class="charts-row">
         <div class="card">
           <div class="card-header">
@@ -559,6 +593,13 @@
             </div>
           </div>
           <div class="chart-container">
+            <div class="chart-skeleton" id="skelPerf">
+              <div class="chart-skeleton-bar"></div><div class="chart-skeleton-bar"></div>
+              <div class="chart-skeleton-bar"></div><div class="chart-skeleton-bar"></div>
+              <div class="chart-skeleton-bar"></div><div class="chart-skeleton-bar"></div>
+              <div class="chart-skeleton-bar"></div><div class="chart-skeleton-bar"></div>
+              <div class="chart-skeleton-bar"></div><div class="chart-skeleton-bar"></div>
+            </div>
             <canvas id="perfChart"></canvas>
           </div>
         </div>
@@ -566,7 +607,10 @@
           <div class="card-header">
             <span class="card-title">Asset Allocation</span>
           </div>
-          <div class="chart-container" style="height:180px">
+          <div class="chart-container is-compact">
+            <div class="chart-skeleton" id="skelAlloc" style="display:flex;align-items:center;justify-content:center;padding:0">
+              <div style="width:100px;height:100px;border-radius:50%;border:10px solid var(--border);opacity:0.4;animation:skeletonPulse 1.8s ease-in-out infinite"></div>
+            </div>
             <canvas id="allocChart"></canvas>
           </div>
           <div class="alloc-legend" id="allocLegend"></div>
@@ -576,7 +620,7 @@
       <!-- Risk Row -->
       <div class="risk-row">
         <div class="risk-card">
-          <div class="risk-metric-label">Stress Test — S&amp;P 500 -15%</div>
+          <div class="risk-metric-label">Stress Test — S&P 500 -15%</div>
           <div class="risk-metric-value" style="color:var(--red)">-$218M</div>
           <div class="risk-meter"><div class="risk-meter-fill" style="width:72%;background:var(--red)"></div></div>
           <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">-1.7% of portfolio</div>
@@ -619,192 +663,248 @@
           </table>
         </div>
       </div>
-
     </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+      <div class="main-footer-left">
+        <span>&copy; 2026 Aladdin•O Dashboard</span>
+        <a href="javascript:void(0)">Privacy</a>
+        <a href="javascript:void(0)">Terms</a>
+        <a href="javascript:void(0)">Support</a>
+      </div>
+      <div class="main-footer-right">v2.4.1 · Data delayed 15min</div>
+    </footer>
   </div>
 
   <script>
-    // ═══════════════════════════════════════════════
-    // PART 1 — UI Only (always runs, no Chart deps)
-    // ═══════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════
+    // ISLAND 1 — UI Shell (zero dependencies, runs immediately)
+    // ═══════════════════════════════════════════════════════════════
 
     // ─── Clock ───
-    function updateClock() {
-      const now = new Date();
-      const el = document.getElementById('clock');
-      if (el) el.textContent = now.toLocaleTimeString('en-US', { hour12: false });
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+    (function() {
+      var el = document.getElementById('clock');
+      if (!el) return;
+      function tick() {
+        el.textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
+      }
+      tick();
+      setInterval(tick, 1000);
+    })();
 
-    // ─── Holdings Data ───
-    const holdings = [
-      { asset: 'AAPL', name: 'Apple Inc.', type: 'Equity', shares: '2,450,000', price: 198.42, mv: 486.13, weight: 3.80, day: 1.24, ytd: 18.5 },
-      { asset: 'MSFT', name: 'Microsoft Corp.', type: 'Equity', shares: '1,820,000', price: 425.30, mv: 774.05, weight: 6.05, day: -0.42, ytd: 14.2 },
-      { asset: 'T 4.25 11/34', name: 'US Treasury 4.25% 2034', type: 'Treasury', shares: '$450M', price: 102.15, mv: 459.68, weight: 3.59, day: 0.08, ytd: 3.4 },
-      { asset: 'IVV', name: 'iShares S&P 500 Core', type: 'ETF', shares: '3,100,000', price: 534.80, mv: 1657.88, weight: 12.95, day: 0.62, ytd: 21.1 },
-      { asset: 'AMZN', name: 'Amazon.com Inc.', type: 'Equity', shares: '680,000', price: 198.75, mv: 135.15, weight: 1.06, day: 0.88, ytd: 25.3 },
-      { asset: 'IAGG', name: 'iShares Intl Agg Bond', type: 'ETF', shares: '5,400,000', price: 52.10, mv: 281.34, weight: 2.20, day: -0.15, ytd: 1.8 },
-      { asset: 'GOOGL', name: 'Alphabet Inc.', type: 'Equity', shares: '920,000', price: 182.60, mv: 167.99, weight: 1.31, day: 1.05, ytd: 22.7 },
-      { asset: 'TLT', name: 'iShares 20+ Yr Treasury', type: 'ETF', shares: '2,800,000', price: 94.30, mv: 264.04, weight: 2.06, day: -0.32, ytd: -3.8 },
-      { asset: 'JPM', name: 'JPMorgan Chase & Co.', type: 'Equity', shares: '1,100,000', price: 205.80, mv: 226.38, weight: 1.77, day: 0.55, ytd: 19.4 },
-      { asset: 'BND', name: 'Vanguard Total Bond', type: 'ETF', shares: '6,200,000', price: 73.25, mv: 454.15, weight: 3.55, day: -0.05, ytd: 0.9 },
-    ];
-
-    function renderHoldings(data) {
-      const tbody = document.getElementById('holdingsBody');
+    // ─── Holdings Table ───
+    (function() {
+      var data = [
+        { a:'AAPL', n:'Apple Inc.', t:'Equity', s:'2,450,000', p:198.42, mv:486.13, w:3.80, d:1.24, y:18.5 },
+        { a:'MSFT', n:'Microsoft Corp.', t:'Equity', s:'1,820,000', p:425.30, mv:774.05, w:6.05, d:-0.42, y:14.2 },
+        { a:'T 4.25 11/34', n:'US Treasury 4.25% 2034', t:'Treasury', s:'$450M', p:102.15, mv:459.68, w:3.59, d:0.08, y:3.4 },
+        { a:'IVV', n:'iShares S&P 500 Core', t:'ETF', s:'3,100,000', p:534.80, mv:1657.88, w:12.95, d:0.62, y:21.1 },
+        { a:'AMZN', n:'Amazon.com Inc.', t:'Equity', s:'680,000', p:198.75, mv:135.15, w:1.06, d:0.88, y:25.3 },
+        { a:'IAGG', n:'iShares Intl Agg Bond', t:'ETF', s:'5,400,000', p:52.10, mv:281.34, w:2.20, d:-0.15, y:1.8 },
+        { a:'GOOGL', n:'Alphabet Inc.', t:'Equity', s:'920,000', p:182.60, mv:167.99, w:1.31, d:1.05, y:22.7 },
+        { a:'TLT', n:'iShares 20+ Yr Treasury', t:'ETF', s:'2,800,000', p:94.30, mv:264.04, w:2.06, d:-0.32, y:-3.8 },
+        { a:'JPM', n:'JPMorgan Chase & Co.', t:'Equity', s:'1,100,000', p:205.80, mv:226.38, w:1.77, d:0.55, y:19.4 },
+        { a:'BND', n:'Vanguard Total Bond', t:'ETF', s:'6,200,000', p:73.25, mv:454.15, w:3.55, d:-0.05, y:0.9 },
+      ];
+      var tbody = document.getElementById('holdingsBody');
       if (!tbody) return;
-      tbody.innerHTML = data.map(h => `
-        <tr>
-          <td>
-            <div class="td-asset">
-              <div class="asset-icon" style="background:${h.type === 'Equity' ? 'rgba(59,130,246,0.15)' : h.type === 'Treasury' ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)'};color:${h.type === 'Equity' ? '#3B82F6' : h.type === 'Treasury' ? '#10B981' : '#F59E0B'}">${h.asset.slice(0,3)}</div>
-              <div>
-                <div class="asset-ticker">${h.asset}</div>
-                <div class="asset-name">${h.name}</div>
-              </div>
-            </div>
-          </td>
-          <td>${h.type}</td>
-          <td class="num">${h.shares}</td>
-          <td class="num">$${h.price.toFixed(2)}</td>
-          <td class="num">$${h.mv.toFixed(1)}M</td>
-          <td class="num">${h.weight.toFixed(2)}%</td>
-          <td class="num ${h.day >= 0 ? 'up' : 'down'}">${h.day >= 0 ? '+' : ''}${h.day.toFixed(2)}%</td>
-          <td class="num ${h.ytd >= 0 ? 'up' : 'down'}">${h.ytd >= 0 ? '+' : ''}${h.ytd.toFixed(1)}%</td>
-        </tr>
-      `).join('');
-    }
-    renderHoldings(holdings);
+      function render(arr) {
+        tbody.innerHTML = arr.map(function(h) {
+          var iconBg = h.t === 'Equity' ? 'rgba(59,130,246,0.15)' : h.t === 'Treasury' ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)';
+          var iconCl = h.t === 'Equity' ? '#3B82F6' : h.t === 'Treasury' ? '#10B981' : '#F59E0B';
+          var dc = h.d >= 0 ? 'up' : 'down';
+          var yc = h.y >= 0 ? 'up' : 'down';
+          return '<tr><td><div class="td-asset"><div class="asset-icon" style="background:' + iconBg + ';color:' + iconCl + '">' + h.a.slice(0,3) + '</div><div><div class="asset-ticker">' + h.a + '</div><div class="asset-name">' + h.n + '</div></div></div></td><td>' + h.t + '</td><td class="num">' + h.s + '</td><td class="num">$' + h.p.toFixed(2) + '</td><td class="num">$' + h.mv.toFixed(1) + 'M</td><td class="num">' + h.w.toFixed(2) + '%</td><td class="num ' + dc + '">' + (h.d >= 0 ? '+' : '') + h.d.toFixed(2) + '%</td><td class="num ' + yc + '">' + (h.y >= 0 ? '+' : '') + h.y.toFixed(1) + '%</td></tr>';
+        }).join('');
+      }
+      render(data);
 
-    // ─── Table Sorting ───
-    let sortAsc = true;
-    let lastCol = '';
-    document.querySelectorAll('th[data-col]').forEach(th => {
-      th.addEventListener('click', () => {
-        const col = th.dataset.col;
-        sortAsc = (col === lastCol) ? !sortAsc : true;
-        lastCol = col;
-        const sorted = [...holdings].sort((a, b) => {
-          let va = a[col], vb = b[col];
-          if (typeof va === 'string') {
-            const na = parseFloat(va.replace(/[$,M]/g,''));
-            const nb = parseFloat(vb.replace(/[$,M]/g,''));
-            if (!isNaN(na)) return sortAsc ? na - nb : nb - na;
-            return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
-          }
-          return sortAsc ? va - vb : vb - va;
+      // Sorting
+      var sortAsc = true, lastCol = '';
+      document.querySelectorAll('th[data-col]').forEach(function(th) {
+        th.addEventListener('click', function() {
+          var col = th.dataset.col;
+          sortAsc = col === lastCol ? !sortAsc : true;
+          lastCol = col;
+          var sorted = data.slice().sort(function(a, b) {
+            var va = a[col], vb = b[col];
+            if (typeof va === 'string') {
+              var na = parseFloat(va.replace(/[$,M]/g,''));
+              var nb = parseFloat(vb.replace(/[$,M]/g,''));
+              if (!isNaN(na)) return sortAsc ? na - nb : nb - na;
+              return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+            }
+            return sortAsc ? va - vb : vb - va;
+          });
+          render(sorted);
         });
-        renderHoldings(sorted);
       });
-    });
+    })();
 
-    // ─── Simulated KPI update tick ───
-    setInterval(() => {
-      const ids = ['aum','var','sharpe','ytd'];
-      const el = id => document.getElementById(id);
+    // ─── KPI Ticker ───
+    setInterval(function() {
+      var ids = ['aum','var','sharpe','ytd'];
+      var el = function(id) { return document.getElementById(id); };
       if (!el('aum')) return;
-
-      const base = { aum:12.8, var:142, sharpe:1.84, ytd:8.67 };
-      const bump = (Math.random() - 0.5) * 0.04;
-      el('aum').textContent = '$' + (base.aum + bump).toFixed(1) + 'B';
+      var base = { aum:12.8, var:142, sharpe:1.84, ytd:8.67 };
+      el('aum').textContent = '$' + (base.aum + (Math.random() - 0.5) * 0.04).toFixed(1) + 'B';
       el('var').textContent = '$' + Math.round(base.var + (Math.random() - 0.5) * 3) + 'M';
       el('sharpe').textContent = (base.sharpe + (Math.random() - 0.5) * 0.06).toFixed(2);
       el('ytd').textContent = '+' + (base.ytd + (Math.random() - 0.4) * 0.2).toFixed(2) + '%';
     }, 5000);
 
-    // ═══════════════════════════════════════════════
-    // PART 2 — Chart Dependent (graceful fallback)
-    // ═══════════════════════════════════════════════
-
-    const perfData = {
-      '1M':  Array.from({length:22}, (_,i) => ({x:i, y:100 + Math.random()*4 + i*0.12})),
-      '3M':  Array.from({length:65}, (_,i) => ({x:i, y:100 + Math.random()*6 + i*0.18})),
-      '6M':  Array.from({length:130}, (_,i) => ({x:i, y:100 + Math.random()*8 + i*0.22})),
-      '1Y':  Array.from({length:260}, (_,i) => ({x:i, y:100 + Math.random()*10 + i*0.30})),
-      'YTD': Array.from({length:130}, (_,i) => ({x:i, y:100 + Math.random()*7 + i*0.35})),
-    };
-
-    const perfCtx = document.getElementById('perfChart').getContext('2d');
-    let perfChart;
-
-    function buildPerfChart(period) {
-      if (typeof Chart === 'undefined') return;
-      const data = perfData[period] || perfData['1Y'];
-      const labels = data.map((_,i) => {
-        if (period === '1M') return `D${i+1}`;
-        if (period === '3M' || period === '6M' || period === 'YTD') return i % 10 === 0 ? `W${Math.floor(i/5)+1}` : '';
-        return i % 20 === 0 ? `W${Math.floor(i/5)+1}` : '';
-      });
-      if (perfChart) perfChart.destroy();
-      perfChart = new Chart(perfCtx, {
-        type: 'line',
-        data: { labels, datasets: [{
-          label: 'Portfolio', data: data.map(d => d.y), borderColor: '#3B82F6',
-          backgroundColor: (ctx) => { const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 260); g.addColorStop(0, 'rgba(59,130,246,0.25)'); g.addColorStop(1, 'rgba(59,130,246,0)'); return g; },
-          fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2,
-        }, {
-          label: 'Benchmark (SPY)', data: data.map(d => 100 + (d.y - 100) * 0.85 + (Math.random() - 0.5) * 3),
-          borderColor: '#5A6478', borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: false,
-        }] },
-        options: {
-          responsive: true, maintainAspectRatio: false, interaction: { intersect: false, mode: 'index' },
-          plugins: {
-            legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 12, padding: 12, usePointStyle: true, pointStyle: 'line' } },
-            tooltip: { backgroundColor: '#1A1F2E', borderColor: '#2A3040', borderWidth: 1, padding: 10, callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}` } }
-          },
-          scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 12 } }, y: { grid: { color: 'rgba(42,48,64,0.5)' }, ticks: { callback: v => v.toFixed(0) } } }
-        }
-      });
-    }
-
-    // Period controls — ALWAYS attached, even before Chart loads
-    document.querySelectorAll('.card-controls button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        btn.closest('.card-controls').querySelectorAll('button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        buildPerfChart(btn.dataset.period);
-      });
-    });
-
-    // Allocation legend — renders immediately, no Chart dependency
-    const allocData = [
-      { label: 'US Equities', value: 38, color: '#3B82F6' },
-      { label: 'Intl Equities', value: 18, color: '#8B5CF6' },
-      { label: 'US Treasuries', value: 22, color: '#10B981' },
-      { label: 'Corp Bonds', value: 12, color: '#F59E0B' },
-      { label: 'Alternatives', value: 7, color: '#EF4444' },
-      { label: 'Cash', value: 3, color: '#06B6D4' },
-    ];
-    const legendEl = document.getElementById('allocLegend');
-    if (legendEl) {
-      allocData.forEach(d => {
-        const item = document.createElement('div');
+    // ─── Allocation Legend (no chart dep) ───
+    (function() {
+      var el = document.getElementById('allocLegend');
+      if (!el) return;
+      var items = [
+        { l:'US Equities', v:38, c:'#3B82F6' }, { l:'Intl Equities', v:18, c:'#8B5CF6' },
+        { l:'US Treasuries', v:22, c:'#10B981' }, { l:'Corp Bonds', v:12, c:'#F59E0B' },
+        { l:'Alternatives', v:7, c:'#EF4444' }, { l:'Cash', v:3, c:'#06B6D4' },
+      ];
+      items.forEach(function(d) {
+        var item = document.createElement('div');
         item.className = 'alloc-item';
-        item.innerHTML = `<div class="alloc-item-left"><span class="alloc-dot" style="background:${d.color}"></span><span>${d.label}</span></div><span class="alloc-item-value">${d.value}%</span>`;
-        legendEl.appendChild(item);
+        item.innerHTML = '<div class="alloc-item-left"><span class="alloc-dot" style="background:' + d.c + '"></span><span>' + d.l + '</span></div><span class="alloc-item-value">' + d.v + '%</span>';
+        el.appendChild(item);
       });
-    }
+    })();
 
-    // Init charts once Chart.js is available
-    function initCharts() {
-      if (typeof Chart === 'undefined') return setTimeout(initCharts, 200);
+    // ═══════════════════════════════════════════════════════════════
+    // ISLAND 2 — Charts (dynamically loaded, non-blocking)
+    // ═══════════════════════════════════════════════════════════════
+
+    // Callback queue — fires instantly when CDN lands, zero polling
+    window.__chartCallbacks = window.__chartCallbacks || [];
+
+    // Inject Chart.js via dynamic script tag (async, non-blocking)
+    (function() {
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js';
+      s.onload = function() {
+        var q = window.__chartCallbacks;
+        while (q.length) q.shift()();
+      };
+      s.onerror = function() { console.warn('Chart.js CDN failed to load'); };
+      document.head.appendChild(s);
+    })();
+
+    // Register chart init as a callback
+    window.__chartCallbacks.push(function() {
+      var Chart = window.Chart;
 
       Chart.defaults.color = '#8892A8';
       Chart.defaults.borderColor = '#2A3040';
       Chart.defaults.font.family = "'Inter', sans-serif";
       Chart.defaults.font.size = 11;
 
+      // Hide skeletons
+      var sk1 = document.getElementById('skelPerf');
+      var sk2 = document.getElementById('skelAlloc');
+      if (sk1) sk1.classList.add('is-hidden');
+      if (sk2) sk2.classList.add('is-hidden');
+
+      // Perf data
+      function genData(n, drift) {
+        var arr = [];
+        for (var i = 0; i < n; i++) arr.push({ y: 100 + Math.random() * (~(n/10)||1) + i * drift });
+        return arr;
+      }
+      var perfData = {
+        '1M':  genData(22, 0.12),
+        '3M':  genData(65, 0.18),
+        '6M':  genData(130, 0.22),
+        '1Y':  genData(260, 0.30),
+        'YTD': genData(130, 0.35),
+      };
+
+      var perfCtx = document.getElementById('perfChart').getContext('2d');
+      var perfChart = null;
+
+      function buildPerfChart(period) {
+        var data = perfData[period] || perfData['1Y'];
+        var labels = data.map(function(_, i) {
+          if (period === '1M') return 'D' + (i+1);
+          if (period === '3M' || period === '6M' || period === 'YTD') return i % 10 === 0 ? 'W' + (Math.floor(i/5)+1) : '';
+          return i % 20 === 0 ? 'W' + (Math.floor(i/5)+1) : '';
+        });
+        if (perfChart) perfChart.destroy();
+        perfChart = new Chart(perfCtx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Portfolio',
+              data: data.map(function(d) { return d.y; }),
+              borderColor: '#3B82F6',
+              backgroundColor: function(ctx) {
+                var g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 260);
+                g.addColorStop(0, 'rgba(59,130,246,0.25)');
+                g.addColorStop(1, 'rgba(59,130,246,0)');
+                return g;
+              },
+              fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2,
+            }, {
+              label: 'Benchmark (SPY)',
+              data: data.map(function(d) { return 100 + (d.y - 100) * 0.85 + (Math.random() - 0.5) * 3; }),
+              borderColor: '#5A6478', borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: false,
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, interaction: { intersect: false, mode: 'index' },
+            plugins: {
+              legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 12, padding: 12, usePointStyle: true, pointStyle: 'line' } },
+              tooltip: { backgroundColor: '#1A1F2E', borderColor: '#2A3040', borderWidth: 1, padding: 10 }
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { maxTicksLimit: 12 } },
+              y: { grid: { color: 'rgba(42,48,64,0.5)' }, ticks: { callback: function(v) { return v.toFixed(0); } } }
+            }
+          }
+        });
+      }
+
       buildPerfChart('1Y');
 
-      const allocCtx = document.getElementById('allocChart').getContext('2d');
+      // Period controls
+      document.querySelectorAll('.card-controls button').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          btn.closest('.card-controls').querySelectorAll('button').forEach(function(b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          buildPerfChart(btn.dataset.period);
+        });
+      });
+
+      // Allocation chart
+      var allocData = [
+        { label: 'US Equities', value: 38, color: '#3B82F6' },
+        { label: 'Intl Equities', value: 18, color: '#8B5CF6' },
+        { label: 'US Treasuries', value: 22, color: '#10B981' },
+        { label: 'Corp Bonds', value: 12, color: '#F59E0B' },
+        { label: 'Alternatives', value: 7, color: '#EF4444' },
+        { label: 'Cash', value: 3, color: '#06B6D4' },
+      ];
+      var allocCtx = document.getElementById('allocChart').getContext('2d');
       new Chart(allocCtx, {
         type: 'doughnut',
-        data: { labels: allocData.map(d => d.label), datasets: [{ data: allocData.map(d => d.value), backgroundColor: allocData.map(d => d.color), borderWidth: 0, hoverOffset: 6 }] },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1A1F2E', borderColor: '#2A3040', borderWidth: 1, padding: 10, callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed}%` } } } }
+        data: {
+          labels: allocData.map(function(d) { return d.label; }),
+          datasets: [{
+            data: allocData.map(function(d) { return d.value; }),
+            backgroundColor: allocData.map(function(d) { return d.color; }),
+            borderWidth: 0, hoverOffset: 6,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '68%',
+          plugins: {
+            legend: { display: false },
+            tooltip: { backgroundColor: '#1A1F2E', borderColor: '#2A3040', borderWidth: 1, padding: 10 }
+          }
+        }
       });
-    }
-    initCharts();
+    });
   </script>
 </body>
 </html>
